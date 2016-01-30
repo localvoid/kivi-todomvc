@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "name": "todomvc-kivi",
+  "version": "0.1.0",
+  "description": "TodoMVC: kivi",
+  "license": "BSD",
+  "homepage": "https://localvoid.github.io/todomvc-kivi/",
+  "repository": "https://github.com/localvoid/todomvc-kivi/",
+  "author": {
+    "name": "Boris Kaul",
+    "email": "localvoid@gmail.com",
+    "url": "https://github.com/localvoid"
+  },
+  "keywords": [
+    "virtual",
+    "dom",
+    "virtualdom",
+    "vdom",
+    "diff",
+    "browser",
+    "kivi",
+    "TodoMVC"
+  ],
+  "dependencies": {
+    "kivi": "^0.7.0",
+    "todomvc-common": "^1.0.2"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.8.3",
+    "del": "^1.2.1",
+    "google-closure-compiler": "^20151216.1.0",
+    "gulp": "^3.9.0",
+    "gulp-gh-pages": "^0.5.4",
+    "gulp-if": "^1.2.5"
+  }
+}
