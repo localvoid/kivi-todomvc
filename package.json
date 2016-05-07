@@ -3,9 +3,9 @@
   "name": "todomvc-kivi",
   "version": "0.1.0",
   "description": "TodoMVC: kivi",
-  "license": "BSD",
+  "license": "MIT",
   "homepage": "https://localvoid.github.io/todomvc-kivi/",
-  "repository": "https://github.com/localvoid/todomvc-kivi/",
+  "repository": "https://github.com/localvoid/todomvc-kivi",
   "author": {
     "name": "Boris Kaul",
     "email": "localvoid@gmail.com",
@@ -22,15 +22,15 @@
     "TodoMVC"
   ],
   "dependencies": {
-    "kivi": "^0.7.0",
-    "todomvc-common": "^1.0.2"
+    "kivi": "^0.9.0"
   },
   "devDependencies": {
-    "browser-sync": "^2.8.3",
-    "del": "^1.2.1",
-    "google-closure-compiler": "^20151216.1.0",
-    "gulp": "^3.9.0",
+    "del": "^2.2.0",
+    "google-closure-compiler": "^20160315.2.0",
+    "gulp": "^3.9.1",
     "gulp-gh-pages": "^0.5.4",
-    "gulp-if": "^1.2.5"
+    "gulp-typescript": "^2.13.3",
+    "rollup-plugin-node-resolve": "^1.5.0",
+    "rollup-plugin-replace": "^1.1.0"
   }
 }

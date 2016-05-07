@@ -1,14 +1,12 @@
-node_modules
-
+dist
 build
 
-# Tern
-.tern-port
+node_modules
+typings
+
+.DS_Store
+.idea
+.vscode
 
 # gulp-gh-deploy
 .publish
-
-# Mac
-.DS_Store
-
-.idea
