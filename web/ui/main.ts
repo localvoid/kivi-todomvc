@@ -1,4 +1,4 @@
-import {ComponentDescriptor, createVRoot, createVCheckedInput} from "kivi";
+import {ComponentDescriptor, createVCheckedInput} from "kivi";
 import {state} from "../data";
 import {EntryList} from "./entry_list";
 
@@ -15,11 +15,12 @@ export const Main = new ComponentDescriptor()
       e.preventDefault();
     });
   })
-  .update((c) => {
-    c.sync(createVRoot().props({"id": "main"}).children([
-      createVCheckedInput()
-        .props({"type": "checkbox", "id": "toggle-all"})
-        .checked(state.counters.entriesCompleted === state.counters.entries),
-      EntryList.createVNode(),
-    ]));
+  .vRender((c, root) => {
+    root.props({"id": "main"})
+      .children([
+        createVCheckedInput()
+          .props({"type": "checkbox", "id": "toggle-all"})
+          .checked(state.counters.entriesCompleted === state.counters.entries),
+        EntryList.createVNode(),
+      ]);
   });

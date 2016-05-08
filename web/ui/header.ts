@@ -1,4 +1,4 @@
-import {ComponentDescriptor, createVRoot, createVElement, createVTextInput} from "kivi";
+import {ComponentDescriptor, createVElement, createVTextInput} from "kivi";
 import {state} from "../data";
 
 export const Header = new ComponentDescriptor<any, string>()
@@ -19,8 +19,8 @@ export const Header = new ComponentDescriptor<any, string>()
       }
     });
   })
-  .update((c) => {
-    c.sync(createVRoot().children([
+  .vRender((c, root) => {
+    root.children([
       createVElement("h1").children("todos"),
       createVTextInput()
         .props({
@@ -30,5 +30,5 @@ export const Header = new ComponentDescriptor<any, string>()
           "autofocus": true,
         })
         .value(c.state),
-    ]));
+    ]);
   });

@@ -1,4 +1,4 @@
-import {ComponentDescriptor, createVRoot} from "kivi";
+import {ComponentDescriptor} from "kivi";
 import {state} from "../data";
 import {Header} from "./header";
 import {Main} from "./main";
@@ -9,12 +9,9 @@ export const App = new ComponentDescriptor()
   .init((c) => {
     c.subscribe(state.counters.onEntriesChange);
   })
-  .update((c) => {
-    const counters = state.counters;
-
-    c.sync(createVRoot()
-      .disableChildrenShapeError()
-      .children(counters.entries > 0 ?
+  .vRender((c, root) => {
+    root.disableChildrenShapeError()
+      .children(state.counters.entries > 0 ?
         [Header.createVNode(), Main.createVNode(), Footer.createVNode()] :
-        [Header.createVNode()]));
+        [Header.createVNode()]);
   });

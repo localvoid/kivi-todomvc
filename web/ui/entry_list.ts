@@ -1,5 +1,5 @@
-import {ComponentDescriptor, Component, createVRoot, createVElement, createVCheckedInput, createVTextInput, VNode,
-        RenderFlags, getBackRef, scheduler} from "kivi";
+import {ComponentDescriptor, Component, createVElement, createVCheckedInput, createVTextInput, VNode,
+        getBackRef, scheduler} from "kivi";
 import {state, DisplaySettings, Entry} from "../data";
 
 type EntryViewType = Component<Entry, boolean>;
@@ -11,7 +11,7 @@ const EntryView = new ComponentDescriptor<Entry, boolean>()
     c.subscribe(c.data.onChange);
     c.state = false;
   })
-  .update((c) => {
+  .vRender((c, root) => {
     const entry = c.data;
     const isEditing = state.entryEdit.editing === entry;
 
@@ -38,7 +38,9 @@ const EntryView = new ComponentDescriptor<Entry, boolean>()
       children = [view];
     }
 
-    c.sync(createVRoot().className(rootClasses).disableChildrenShapeError().children(children));
+    root.className(rootClasses)
+      .disableChildrenShapeError()
+      .children(children);
   });
 
 export const EntryList = new ComponentDescriptor()
@@ -94,7 +96,7 @@ export const EntryList = new ComponentDescriptor()
       }
     });
   })
-  .update((c) => {
+  .vRender((c, root) => {
     const counters = state.counters;
     const showEntries = state.settings.showEntries;
     const entries = state.entryList.items;
@@ -143,5 +145,6 @@ export const EntryList = new ComponentDescriptor()
       }
     }
 
-    c.sync(createVRoot().props({"id": "todo-list"}).trackByKeyChildren(children), RenderFlags.ShallowUpdate);
+    root.props({"id": "todo-list"})
+      .trackByKeyChildren(children);
   });

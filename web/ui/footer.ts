@@ -1,4 +1,4 @@
-import {ComponentDescriptor, createVRoot, createVElement, createVText, VNode} from "kivi";
+import {ComponentDescriptor, createVElement, createVText, VNode} from "kivi";
 import {DisplaySettings, state} from "../data";
 
 export const Footer = new ComponentDescriptor()
@@ -15,7 +15,7 @@ export const Footer = new ComponentDescriptor()
       }
     });
   })
-  .update((c) => {
+  .vRender((c, root) => {
     const showEntries = state.settings.showEntries;
 
     const children = [] as VNode[];
@@ -57,8 +57,7 @@ export const Footer = new ComponentDescriptor()
         .children(`Clear completed (${entriesCompleted})`));
     }
 
-    c.sync(createVRoot()
-      .props({"id": "footer"})
+    root.props({"id": "footer"})
       .disableChildrenShapeError()
-      .children(children));
+      .children(children);
   });
