@@ -5,8 +5,6 @@ import {EntryList} from "./entry_list";
 export const Main = new ComponentDescriptor()
   .tagName("section")
   .init((c) => {
-    c.subscribe(state.counters.onChange);
-
     c.element.addEventListener("change", (e) => {
       if ((e.target as Element).id === "toggle-all") {
         state.toggleAll(state.counters.entriesCompleted !== state.counters.entries);
@@ -15,12 +13,15 @@ export const Main = new ComponentDescriptor()
       e.preventDefault();
     });
   })
+  .attached((c) => {
+    c.subscribe(state.counters.onChange);
+  })
   .vRender((c, root) => {
     root.props({"id": "main"})
       .children([
         createVCheckedInput()
           .props({"type": "checkbox", "id": "toggle-all"})
           .checked(state.counters.entriesCompleted === state.counters.entries),
-        EntryList.createVNode(),
+        EntryList.createVNode().bindOnce(),
       ]);
   });

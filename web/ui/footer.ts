@@ -4,9 +4,6 @@ import {DisplaySettings, state} from "../data";
 export const Footer = new ComponentDescriptor()
   .tagName("footer")
   .init((c) => {
-    c.subscribe(state.settings.onChange);
-    c.subscribe(state.counters.onChange);
-
     c.element.addEventListener("click", (e) => {
       if ((e.target as Element).id === "clear-completed") {
         state.clearCompleted();
@@ -14,6 +11,10 @@ export const Footer = new ComponentDescriptor()
         e.stopPropagation();
       }
     });
+  })
+  .attached((c) => {
+    c.subscribe(state.settings.onChange);
+    c.subscribe(state.counters.onChange);
   })
   .vRender((c, root) => {
     const showEntries = state.settings.showEntries;
