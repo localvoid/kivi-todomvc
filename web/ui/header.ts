@@ -1,7 +1,7 @@
 import {ComponentDescriptor, createVElement, createVTextInput} from "kivi";
 import {state} from "../data";
 
-export const Header = new ComponentDescriptor<any, string, any>()
+export const Header = new ComponentDescriptor<any, string>()
   .tagName("header")
   .init((c) => {
     c.state = "";
@@ -9,12 +9,14 @@ export const Header = new ComponentDescriptor<any, string, any>()
     c.element.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.keyCode === 13 && (e.target as HTMLElement).id === "new-todo") {
         state.addEntry(c.state);
-        c.setState("");
+        c.state = "";
+        c.invalidate();
       }
     });
     c.element.addEventListener("input", (e) => {
       if ((e.target as HTMLElement).id === "new-todo") {
-        c.setState((e.target as HTMLInputElement).value);
+        c.state = (e.target as HTMLInputElement).value;
+        c.invalidate();
       }
     });
   })

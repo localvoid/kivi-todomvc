@@ -2,13 +2,13 @@ import {ComponentDescriptor, Component, createVElement, createVCheckedInput, cre
         getBackRef, scheduler} from "kivi";
 import {state, DisplaySettings, Entry} from "../data";
 
-type EntryViewType = Component<Entry, any, boolean>;
+type EntryViewType = Component<Entry, boolean>;
 
-const EntryView = new ComponentDescriptor<Entry, any, boolean>()
+const EntryView = new ComponentDescriptor<Entry, boolean>()
   .tagName("li")
   .enableBackRef()
   .init((c) => {
-    c.data = false;
+    c.state = false;
   })
   .attached((c) => {
     c.subscribe(c.props.onChange);
@@ -29,13 +29,13 @@ const EntryView = new ComponentDescriptor<Entry, any, boolean>()
       c.transientSubscribe(state.entryEdit.onChange);
       rootClasses = entry.completed ? "editing completed" : "editing";
       const input = createVTextInput().className("edit").attrs({"type": "text"}).value(state.entryEdit.title);
-      if (!c.data) {
-        c.data = true;
+      if (!c.state) {
+        c.state = true;
         scheduler.currentFrame().focus(input);
       }
       children = [view, input];
     } else {
-      c.data = false;
+      c.state = false;
       rootClasses = entry.completed ? "completed" : undefined;
       children = [view];
     }
