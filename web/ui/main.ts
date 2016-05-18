@@ -1,27 +1,28 @@
-import {ComponentDescriptor, createVCheckedInput} from "kivi";
-import {state} from "../data";
+import {ComponentDescriptor, createVElement} from "kivi";
+import {store, ToggleAllMessage} from "../store";
 import {EntryList} from "./entry_list";
 
-export const Main = new ComponentDescriptor()
+export const Main = new ComponentDescriptor<void, void>()
   .tagName("section")
   .init((c) => {
     c.element.addEventListener("change", (e) => {
       if ((e.target as Element).id === "toggle-all") {
-        state.toggleAll(state.counters.entriesCompleted !== state.counters.entries);
+        store.send(ToggleAllMessage.create(store.state.counters.entriesCompleted !== store.state.counters.entries));
       }
       e.stopPropagation();
       e.preventDefault();
     });
   })
   .attached((c) => {
-    c.subscribe(state.counters.onChange);
+    c.subscribe(store.state.counters.onChange);
   })
-  .vRender((c, root) => {
-    root.props({"id": "main"})
+  .update((c) => {
+    c.vSync(c.createVRoot()
+      .props({"id": "main"})
       .children([
-        createVCheckedInput()
+        createVElement("input")
           .props({"type": "checkbox", "id": "toggle-all"})
-          .checked(state.counters.entriesCompleted === state.counters.entries),
+          .checked(store.state.counters.entriesCompleted === store.state.counters.entries),
         EntryList.createVNode().bindOnce(),
-      ]);
+      ]));
   });

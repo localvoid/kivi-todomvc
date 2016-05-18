@@ -1,23 +1,23 @@
 import {ComponentDescriptor, createVElement, createVText, VNode} from "kivi";
-import {DisplaySettings, state} from "../data";
+import {DisplaySettings, store, ClearCompletedMessage} from "../store";
 
-export const Footer = new ComponentDescriptor()
+export const Footer = new ComponentDescriptor<void, void>()
   .tagName("footer")
   .init((c) => {
     c.element.addEventListener("click", (e) => {
       if ((e.target as Element).id === "clear-completed") {
-        state.clearCompleted();
+        store.send(ClearCompletedMessage.create(null));
         e.preventDefault();
         e.stopPropagation();
       }
     });
   })
   .attached((c) => {
-    c.subscribe(state.settings.onChange);
-    c.subscribe(state.counters.onChange);
+    c.subscribe(store.state.settings.onChange);
+    c.subscribe(store.state.counters.onChange);
   })
-  .vRender((c, root) => {
-    const showEntries = state.settings.showEntries;
+  .update((c) => {
+    const showEntries = store.state.settings.showEntries;
 
     const children = [] as VNode[];
     children.push(createVElement("ul").props({"id": "filters"}).children([
@@ -43,8 +43,8 @@ export const Footer = new ComponentDescriptor()
       ]),
     ]));
 
-    const entries = state.counters.entries;
-    const entriesCompleted = state.counters.entriesCompleted;
+    const entries = store.state.counters.entries;
+    const entriesCompleted = store.state.counters.entriesCompleted;
     const entriesActive = entries - entriesCompleted;
 
     children.push(createVElement("span").props({"id": "todo-count"}).children([
@@ -58,7 +58,8 @@ export const Footer = new ComponentDescriptor()
         .children(`Clear completed (${entriesCompleted})`));
     }
 
-    root.props({"id": "footer"})
+    c.vSync(c.createVRoot()
+      .props({"id": "footer"})
       .disableChildrenShapeError()
-      .children(children);
+      .children(children));
   });

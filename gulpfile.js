@@ -22,7 +22,9 @@ gulp.task('clean', del.bind(null, ['dist', 'build']));
 
 gulp.task('ts', function() {
   return gulp.src('web/**/*.ts')
-    .pipe(ts(require('./tsconfig.json').compilerOptions))
+    .pipe(ts(Object.assign(require('./tsconfig.json').compilerOptions, {
+      typescript: require('typescript'),
+    })))
     .pipe(gulp.dest('build/es6'));
 });
 

@@ -1,17 +1,17 @@
 import {injectComponent} from "kivi";
 import {Route, initRouter} from "./router";
-import {state, DisplaySettings} from "./data";
+import {store, DisplaySettings, SetDisplayMessage} from "./store";
 import {App} from "./ui/app";
 
 initRouter([
   new Route("/completed", () => {
-    state.setDisplay(DisplaySettings.ShowCompleted);
+    store.send(SetDisplayMessage.create(DisplaySettings.ShowCompleted));
   }),
   new Route("/active", () => {
-    state.setDisplay(DisplaySettings.ShowActive);
+    store.send(SetDisplayMessage.create(DisplaySettings.ShowActive));
   }),
   new Route("/", () => {
-    state.setDisplay(DisplaySettings.ShowAll);
+    store.send(SetDisplayMessage.create(DisplaySettings.ShowAll));
   }),
 ]);
 

@@ -1,35 +1,35 @@
-import {ComponentDescriptor, createVElement, createVTextInput} from "kivi";
-import {state} from "../data";
+import {ComponentDescriptor, createVElement} from "kivi";
+import {store, AddEntryMessage} from "../store";
 
-export const Header = new ComponentDescriptor<any, string>()
+export const Header = new ComponentDescriptor<void, {inputValue: string}>()
   .tagName("header")
-  .init((c) => {
-    c.state = "";
-
+  .createState((c) => ({inputValue: ""}))
+  .init((c, props, state) => {
     c.element.addEventListener("keydown", (e: KeyboardEvent) => {
       if (e.keyCode === 13 && (e.target as HTMLElement).id === "new-todo") {
-        state.addEntry(c.state);
-        c.state = "";
+        store.send(AddEntryMessage.create(state.inputValue));
+        state.inputValue = "";
         c.invalidate();
       }
     });
     c.element.addEventListener("input", (e) => {
       if ((e.target as HTMLElement).id === "new-todo") {
-        c.state = (e.target as HTMLInputElement).value;
+        state.inputValue = (e.target as HTMLInputElement).value;
         c.invalidate();
       }
     });
   })
-  .vRender((c, root) => {
-    root.children([
-      createVElement("h1").children("todos"),
-      createVTextInput()
-        .props({
-          "id": "new-todo",
-          "type": "text",
-          "placeholder": "What needs to be done",
-          "autofocus": true,
-        })
-        .value(c.state),
-    ]);
+  .update((c, props, state) => {
+    c.vSync(c.createVRoot()
+      .children([
+        createVElement("h1").children("todos"),
+        createVElement("input")
+          .props({
+            "id": "new-todo",
+            "type": "text",
+            "placeholder": "What needs to be done",
+            "autofocus": true,
+          })
+          .value(state.inputValue),
+      ]));
   });

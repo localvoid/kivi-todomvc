@@ -1,17 +1,18 @@
 import {ComponentDescriptor} from "kivi";
-import {state} from "../data";
+import {store} from "../store";
 import {Header} from "./header";
 import {Main} from "./main";
 import {Footer} from "./footer";
 
-export const App = new ComponentDescriptor()
+export const App = new ComponentDescriptor<void, void>()
   .tagName("section")
   .attached((c) => {
-    c.subscribe(state.counters.onEntriesChange);
+    c.subscribe(store.state.counters.onEntriesChange);
   })
-  .vRender((c, root) => {
-    root.disableChildrenShapeError()
-      .children(state.counters.entries > 0 ?
+  .update((c) => {
+    c.vSync(c.createVRoot().disableChildrenShapeError()
+      .children(store.state.counters.entries > 0 ?
         [Header.createVNode().bindOnce(), Main.createVNode().bindOnce(), Footer.createVNode().bindOnce()] :
-        [Header.createVNode().bindOnce()]);
+        [Header.createVNode().bindOnce()]));
+
   });
