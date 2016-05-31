@@ -1,16 +1,20 @@
 import {ComponentDescriptor, createVElement, createVText, VNode} from "kivi";
 import {DisplaySettings, store, ClearCompletedMessage} from "../store";
 
+
 export const Footer = new ComponentDescriptor<void, void>()
-  .tagName("footer")
+  .enableBackRef()
+  .tagName("footer");
+
+const _onClickClearCompleted = Footer.createDelegatedEventHandler("#clear-completed", false, (e) => {
+  store.send(ClearCompletedMessage.create());
+  e.preventDefault();
+  e.stopPropagation();
+});
+
+Footer
   .init((c) => {
-    c.element.addEventListener("click", (e) => {
-      if ((e.target as Element).id === "clear-completed") {
-        store.send(ClearCompletedMessage.create(null));
-        e.preventDefault();
-        e.stopPropagation();
-      }
-    });
+    (c.element as HTMLElement).onclick = _onClickClearCompleted;
   })
   .attached((c) => {
     c.subscribe(store.state.settings.onChange);

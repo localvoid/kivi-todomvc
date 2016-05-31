@@ -2,22 +2,27 @@ import {ComponentDescriptor, createVElement} from "kivi";
 import {store, AddEntryMessage} from "../store";
 
 export const Header = new ComponentDescriptor<void, {inputValue: string}>()
-  .tagName("header")
+  .enableBackRef()
+  .tagName("header");
+
+const _onKeyDown = Header.createDelegatedEventHandler("#new-todo", false, (e, c, props, state) => {
+  if ((e as KeyboardEvent).keyCode === 13) {
+    store.send(AddEntryMessage.create(state.inputValue));
+    state.inputValue = "";
+    c.invalidate();
+  }
+});
+
+const _onInput = Header.createDelegatedEventHandler("#new-todo", false, (e, c, props, state) => {
+  state.inputValue = (e.target as HTMLInputElement).value;
+  c.invalidate();
+});
+
+Header
   .createState((c) => ({inputValue: ""}))
   .init((c, props, state) => {
-    c.element.addEventListener("keydown", (e: KeyboardEvent) => {
-      if (e.keyCode === 13 && (e.target as HTMLElement).id === "new-todo") {
-        store.send(AddEntryMessage.create(state.inputValue));
-        state.inputValue = "";
-        c.invalidate();
-      }
-    });
-    c.element.addEventListener("input", (e) => {
-      if ((e.target as HTMLElement).id === "new-todo") {
-        state.inputValue = (e.target as HTMLInputElement).value;
-        c.invalidate();
-      }
-    });
+    (c.element as HTMLElement).onkeydown = _onKeyDown;
+    (c.element as HTMLElement).oninput = _onInput;
   })
   .update((c, props, state) => {
     c.vSync(c.createVRoot()

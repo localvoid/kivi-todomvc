@@ -1,8 +1,8 @@
 import {MessageGroup, ActorDescriptor, Invalidator} from "kivi";
 
 export const enum DisplaySettings {
-  ShowAll       = 0,
-  ShowActive    = 1,
+  ShowAll = 0,
+  ShowActive = 1,
   ShowCompleted = 2,
 };
 
@@ -52,151 +52,13 @@ export class AppState {
   entryEdit = new EntryEdit();
 
   _nextEntryId = 0;
-
-  setDisplay(v: DisplaySettings): void {
-    this.settings.showEntries = v;
-    this.settings.onChange.invalidate();
-  }
-
-  addEntry(title: string): void {
-    title = title.trim();
-    if (title !== "") {
-      this.entryList.items.push(new Entry(this._nextEntryId++, title, false));
-      this.entryList.onChange.invalidate();
-      this.counters.entries++;
-      this.counters.onEntriesChange.invalidate();
-      this.counters.onChange.invalidate();
-    }
-  }
-
-  removeEntry(entry: Entry): void {
-    const items = this.entryList.items;
-
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      if (item === entry) {
-        items.splice(i, 1);
-        this.entryList.onChange.invalidate();
-
-        const counters = this.counters;
-        counters.entries--;
-        counters.onEntriesChange.invalidate();
-        if (item.completed) {
-          counters.entriesCompleted--;
-          counters.onEntriesCompletedChange.invalidate();
-        }
-        counters.onChange.invalidate();
-        return;
-      }
-    }
-  }
-
-  updateTitle(entry: Entry, newTitle: string): void {
-    newTitle = newTitle.trim();
-    if (newTitle === "") {
-      this.removeEntry(entry);
-    } else {
-      entry.title = newTitle;
-      entry.onChange.invalidate();
-    }
-  }
-
-  toggleAll(checked: boolean): void {
-    const items = this.entryList.items;
-    const counters = this.counters;
-    let completedDiff = 0;
-    let i: number;
-    let entry: Entry;
-
-    if (checked) {
-      for (i = 0; i < items.length; i++) {
-        entry = items[i];
-        if (!entry.completed) {
-          entry.completed = true;
-          entry.onChange.invalidate();
-          completedDiff++;
-        }
-      }
-    } else {
-      for (i = 0; i < items.length; i++) {
-        entry = items[i];
-        if (entry.completed) {
-          entry.completed = false;
-          entry.onChange.invalidate();
-          completedDiff--;
-        }
-      }
-    }
-    if (completedDiff !== 0) {
-      this.entryList.onEntryCompletedChanged.invalidate();
-      counters.entriesCompleted += completedDiff;
-      counters.onEntriesCompletedChange.invalidate();
-      counters.onChange.invalidate();
-    }
-  }
-
-  toggleEntry(entry: Entry): void {
-    const counters = this.counters;
-
-    if (entry.completed) {
-      entry.completed = false;
-      counters.entriesCompleted--;
-    } else {
-      entry.completed = true;
-      counters.entriesCompleted++;
-    }
-    this.entryList.onEntryCompletedChanged.invalidate();
-    entry.onChange.invalidate();
-    counters.onEntriesCompletedChange.invalidate();
-    counters.onChange.invalidate();
-  }
-
-  clearCompleted(): void {
-    const counters = this.counters;
-    if (counters.entriesCompleted > 0) {
-      const items = this.entryList.items;
-      const newItems = [] as Entry[];
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (!item.completed) {
-          newItems.push(item);
-        }
-      }
-      this.entryList.items = newItems;
-      this.entryList.onChange.invalidate();
-      counters.entries -= counters.entriesCompleted;
-      counters.entriesCompleted = 0;
-      counters.onEntriesCompletedChange.invalidate();
-      counters.onEntriesChange.invalidate();
-      counters.onChange.invalidate();
-    }
-  }
-
-  startEntryEdit(entry: Entry): void {
-    this.entryEdit.editing = entry;
-    this.entryEdit.title = entry.title;
-    this.entryEdit.onChange.invalidate();
-  }
-
-  stopEntryEdit(): void {
-    this.entryEdit.editing = undefined;
-    this.entryEdit.title = "";
-    this.entryEdit.onChange.invalidate();
-  }
-
-  updateEntryEditTitle(newTitle: string): void {
-    if (this.entryEdit.title !== newTitle) {
-      this.entryEdit.title = newTitle;
-      this.entryEdit.onChange.invalidate();
-    }
-  }
 }
 
 export const AppMessages = new MessageGroup("todomvc");
 export const SetDisplayMessage = AppMessages.create<DisplaySettings>("setDisplay");
 export const AddEntryMessage = AppMessages.create<string>("addEntry");
 export const RemoveEntryMessage = AppMessages.create<Entry>("removeEntry");
-export const UpdateTitleMessage = AppMessages.create<{entry: Entry, newTitle: string}>("updateTitle");
+export const UpdateTitleMessage = AppMessages.create<{ entry: Entry, newTitle: string }>("updateTitle");
 export const ToggleAllMessage = AppMessages.create<boolean>("toggleAll");
 export const ToggleEntryMessage = AppMessages.create<Entry>("toggleEntry");
 export const ClearCompletedMessage = AppMessages.create<void>("clearCompleted");
@@ -204,32 +66,173 @@ export const StartEntryEditMessage = AppMessages.create<Entry>("startEntryEdit")
 export const StopEntryEditMessage = AppMessages.create<void>("stopEntryEdit");
 export const UpdateEntryEditTitleMessage = AppMessages.create<string>("updateEntryEdit");
 
-export const AppStore = new ActorDescriptor<AppState>((message, state) => {
-  const descriptor = message.descriptor;
-  if (descriptor === SetDisplayMessage) {
-    state.setDisplay(message.payload as DisplaySettings);
-  } else if (descriptor === AddEntryMessage) {
-    state.addEntry(message.payload as string);
-  } else if (descriptor === RemoveEntryMessage) {
-    state.removeEntry(message.payload as Entry);
-  } else if (descriptor === UpdateTitleMessage) {
-    const payload = message.payload as {entry: Entry, newTitle: string};
-    state.updateTitle(payload.entry, payload.newTitle);
-  } else if (descriptor === ToggleAllMessage) {
-    state.toggleAll(message.payload as boolean);
-  } else if (descriptor === ToggleEntryMessage) {
-    state.toggleEntry(message.payload as Entry);
-  } else if (descriptor === ClearCompletedMessage) {
-    state.clearCompleted();
-  } else if (descriptor === StartEntryEditMessage) {
-    state.startEntryEdit(message.payload as Entry);
-  } else if (descriptor === StopEntryEditMessage) {
-    state.stopEntryEdit();
-  } else if (descriptor === UpdateEntryEditTitleMessage) {
-    state.updateEntryEditTitle(message.payload as string);
+export const AppStore = new ActorDescriptor<void, AppState>()
+  .createState((actor, props) => new AppState())
+  .handleMessage((actor, message, props, state) => {
+    const descriptor = message.descriptor;
+    if (descriptor === SetDisplayMessage) {
+      setDisplay(state, message.payload as DisplaySettings);
+    } else if (descriptor === AddEntryMessage) {
+      addEntry(state, message.payload as string);
+    } else if (descriptor === RemoveEntryMessage) {
+      removeEntry(state, message.payload as Entry);
+    } else if (descriptor === UpdateTitleMessage) {
+      const payload = message.payload as { entry: Entry, newTitle: string };
+      updateTitle(state, payload.entry, payload.newTitle);
+    } else if (descriptor === ToggleAllMessage) {
+      toggleAll(state, message.payload as boolean);
+    } else if (descriptor === ToggleEntryMessage) {
+      toggleEntry(state, message.payload as Entry);
+    } else if (descriptor === ClearCompletedMessage) {
+      clearCompleted(state);
+    } else if (descriptor === StartEntryEditMessage) {
+      startEntryEdit(state, message.payload as Entry);
+    } else if (descriptor === StopEntryEditMessage) {
+      stopEntryEdit(state);
+    } else if (descriptor === UpdateEntryEditTitleMessage) {
+      updateEntryEditTitle(state, message.payload as string);
+    }
+
+    return state;
+  });
+
+function setDisplay(state: AppState, v: DisplaySettings): void {
+  state.settings.showEntries = v;
+  state.settings.onChange.invalidate();
+}
+
+function addEntry(state: AppState, title: string): void {
+  title = title.trim();
+  if (title !== "") {
+    state.entryList.items.push(new Entry(state._nextEntryId++, title, false));
+    state.entryList.onChange.invalidate();
+    state.counters.entries++;
+    state.counters.onEntriesChange.invalidate();
+    state.counters.onChange.invalidate();
   }
+}
 
-  return state;
-});
+function removeEntry(state: AppState, entry: Entry): void {
+  const items = state.entryList.items;
 
-export const store = AppStore.create(new AppState());
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item === entry) {
+      items.splice(i, 1);
+      state.entryList.onChange.invalidate();
+
+      const counters = state.counters;
+      counters.entries--;
+      counters.onEntriesChange.invalidate();
+      if (item.completed) {
+        counters.entriesCompleted--;
+        counters.onEntriesCompletedChange.invalidate();
+      }
+      counters.onChange.invalidate();
+      return;
+    }
+  }
+}
+
+function updateTitle(state: AppState, entry: Entry, newTitle: string): void {
+  newTitle = newTitle.trim();
+  if (newTitle === "") {
+    removeEntry(state, entry);
+  } else {
+    entry.title = newTitle;
+    entry.onChange.invalidate();
+  }
+}
+
+function toggleAll(state: AppState, checked: boolean): void {
+  const items = state.entryList.items;
+  const counters = state.counters;
+  let completedDiff = 0;
+  let i: number;
+  let entry: Entry;
+
+  if (checked) {
+    for (i = 0; i < items.length; i++) {
+      entry = items[i];
+      if (!entry.completed) {
+        entry.completed = true;
+        entry.onChange.invalidate();
+        completedDiff++;
+      }
+    }
+  } else {
+    for (i = 0; i < items.length; i++) {
+      entry = items[i];
+      if (entry.completed) {
+        entry.completed = false;
+        entry.onChange.invalidate();
+        completedDiff--;
+      }
+    }
+  }
+  if (completedDiff !== 0) {
+    state.entryList.onEntryCompletedChanged.invalidate();
+    counters.entriesCompleted += completedDiff;
+    counters.onEntriesCompletedChange.invalidate();
+    counters.onChange.invalidate();
+  }
+}
+
+function toggleEntry(state: AppState, entry: Entry): void {
+  const counters = state.counters;
+
+  if (entry.completed) {
+    entry.completed = false;
+    counters.entriesCompleted--;
+  } else {
+    entry.completed = true;
+    counters.entriesCompleted++;
+  }
+  state.entryList.onEntryCompletedChanged.invalidate();
+  entry.onChange.invalidate();
+  counters.onEntriesCompletedChange.invalidate();
+  counters.onChange.invalidate();
+}
+
+function clearCompleted(state: AppState): void {
+  const counters = state.counters;
+  if (counters.entriesCompleted > 0) {
+    const items = state.entryList.items;
+    const newItems = [] as Entry[];
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.completed) {
+        newItems.push(item);
+      }
+    }
+    state.entryList.items = newItems;
+    state.entryList.onChange.invalidate();
+    counters.entries -= counters.entriesCompleted;
+    counters.entriesCompleted = 0;
+    counters.onEntriesCompletedChange.invalidate();
+    counters.onEntriesChange.invalidate();
+    counters.onChange.invalidate();
+  }
+}
+
+function startEntryEdit(state: AppState, entry: Entry): void {
+  state.entryEdit.editing = entry;
+  state.entryEdit.title = entry.title;
+  state.entryEdit.onChange.invalidate();
+}
+
+function stopEntryEdit(state: AppState): void {
+  state.entryEdit.editing = undefined;
+  state.entryEdit.title = "";
+  state.entryEdit.onChange.invalidate();
+}
+
+function updateEntryEditTitle(state: AppState, newTitle: string): void {
+  if (state.entryEdit.title !== newTitle) {
+    state.entryEdit.title = newTitle;
+    state.entryEdit.onChange.invalidate();
+  }
+}
+
+
+export const store = AppStore.create();

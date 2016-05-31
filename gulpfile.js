@@ -9,6 +9,8 @@ var ghPages = require('gulp-gh-pages');
 
 var CLOSURE_OPTS = {
   compilation_level: 'ADVANCED',
+  entry_point: 'goog:main',
+  dependency_mode: 'STRICT',
   language_in: 'ECMASCRIPT6_STRICT',
   language_out: 'ECMASCRIPT5_STRICT',
   use_types_for_optimization: true,
@@ -46,7 +48,8 @@ gulp.task('js:bundle', ['ts'], function(done) {
   }).then(function(bundle) {
     return bundle.write({
       format: 'es6',
-      dest: 'build/main.es6.js'
+      dest: 'build/main.es6.js',
+      intro: 'goog.module("main");',
     });
   });
 });

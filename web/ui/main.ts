@@ -3,15 +3,18 @@ import {store, ToggleAllMessage} from "../store";
 import {EntryList} from "./entry_list";
 
 export const Main = new ComponentDescriptor<void, void>()
-  .tagName("section")
+  .enableBackRef()
+  .tagName("section");
+
+const _onChange = Main.createDelegatedEventHandler("#toggle-all", false, (e) => {
+  store.send(ToggleAllMessage.create(store.state.counters.entriesCompleted !== store.state.counters.entries));
+  e.stopPropagation();
+  e.preventDefault();
+});
+
+Main
   .init((c) => {
-    c.element.addEventListener("change", (e) => {
-      if ((e.target as Element).id === "toggle-all") {
-        store.send(ToggleAllMessage.create(store.state.counters.entriesCompleted !== store.state.counters.entries));
-      }
-      e.stopPropagation();
-      e.preventDefault();
-    });
+    (c.element as HTMLElement).onchange = _onChange;
   })
   .attached((c) => {
     c.subscribe(store.state.counters.onChange);
