@@ -1,19 +1,28 @@
-import {ComponentDescriptor, Component, createVElement, VNode, getBackRef, scheduler} from "kivi";
-import {store, UpdateTitleMessage, StopEntryEditMessage, StartEntryEditMessage, ToggleEntryMessage,
-  RemoveEntryMessage, UpdateEntryEditTitleMessage, DisplaySettings, Entry} from "../store";
+import {ComponentDescriptor, Component, createVElement, VNode, currentFrame} from "kivi";
+import {store, DisplaySettings, Entry} from "../store";
+
+declare global {
+  interface HTMLElement {
+    onfocusout: (ev: MouseEvent) => any;
+  }
+}
+
+const onFocusOutSupported = HTMLElement.prototype.onfocusout !== undefined;
 
 type EntryViewType = Component<Entry, {toggled: boolean}>;
 
 const EntryView = new ComponentDescriptor<Entry, {toggled: boolean}>()
   .tagName("li")
   .enableBackRef()
-  .createState((c) => ({toggled: false}))
+  .init((c) => {
+    c.state = {toggled: false};
+  })
   .attached((c, props) => {
     c.subscribe(props.onChange);
   })
   .update((c, props, state) => {
     const entry = props;
-    const isEditing = store.state.entryEdit.editing === entry;
+    const isEditing = store.entryEdit.editing === entry;
 
     const view = createVElement("div").className("view").children([
       createVElement("input").className("toggle").attrs({"type": "checkbox"}).checked(entry.completed),
@@ -24,13 +33,13 @@ const EntryView = new ComponentDescriptor<Entry, {toggled: boolean}>()
     let rootClasses: string;
     let children: VNode[];
     if (isEditing) {
-      c.transientSubscribe(store.state.entryEdit.onChange);
+      c.transientSubscribe(store.entryEdit.onChange);
       rootClasses = entry.completed ? "editing completed" : "editing";
       const input = createVElement("input").className("edit").attrs({"type": "text"})
-        .value(store.state.entryEdit.title);
+        .value(store.entryEdit.title);
       if (!state.toggled) {
         state.toggled = true;
-        scheduler.currentFrame().focus(input);
+        currentFrame().focus(input);
       }
       children = [view, input];
     } else {
@@ -39,39 +48,39 @@ const EntryView = new ComponentDescriptor<Entry, {toggled: boolean}>()
       children = [view];
     }
 
-    c.vSync(c.createVRoot()
+    c.sync(c.createVRoot()
       .className(rootClasses)
       .disableChildrenShapeError()
       .children(children));
   });
 
 const _onClick = EntryView.createDelegatedEventHandler(".destroy", "li", (e, c, props) => {
-  store.send(RemoveEntryMessage.create(props));
+  store.removeEntry(props);
 });
 
 const _onDblClick = EntryView.createDelegatedEventHandler("label", "li", (e, c, props) => {
-  store.send(StartEntryEditMessage.create(props));
+  store.startEntryEdit(props);
   c.invalidate();
 });
 
 const _onFocusOut = EntryView.createDelegatedEventHandler(".edit", "li", () => {
-  store.send(StopEntryEditMessage.create());
+  store.stopEntryEdit();
 });
 
 const _onChange = EntryView.createDelegatedEventHandler(".toggle", "li", (e, c, props) => {
-  store.send(ToggleEntryMessage.create(props));
+  store.toggleEntry(props);
 });
 
 const _onInput = EntryView.createDelegatedEventHandler(".edit", "li", (e) => {
-  store.send(UpdateEntryEditTitleMessage.create((e.target as HTMLInputElement).value));
+  store.updateEntryEditTitle((e.target as HTMLInputElement).value);
 });
 
 const _onKeyDown = EntryView.createDelegatedEventHandler(".edit", "li", (e, c, props) => {
   if ((e as KeyboardEvent).keyCode === 13) {
-    store.send(UpdateTitleMessage.create({ entry: props, newTitle: store.state.entryEdit.title }));
-    store.send(StopEntryEditMessage.create());
+    store.updateTitle(props, store.entryEdit.title);
+    store.stopEntryEdit();
   } else if ((e as KeyboardEvent).keyCode === 27) {
-    store.send(StopEntryEditMessage.create());
+    store.stopEntryEdit();
   }
 });
 
@@ -81,18 +90,22 @@ export const EntryList = new ComponentDescriptor<void, void>()
     (c.element as HTMLElement).onkeydown = _onKeyDown;
     (c.element as HTMLElement).onclick = _onClick;
     (c.element as HTMLElement).ondblclick = _onDblClick;
-    (c.element as HTMLElement).onfocusout = _onFocusOut;
+    if (onFocusOutSupported) {
+      (c.element as HTMLElement).onfocusout = _onFocusOut;
+    } else {
+      c.element.addEventListener("blur", _onFocusOut, true);
+    }
     (c.element as HTMLElement).onchange = _onChange;
     (c.element as HTMLElement).oninput = _onInput;
   })
   .attached((c) => {
-    c.subscribe(store.state.settings.onChange);
-    c.subscribe(store.state.entryList.onChange);
+    c.subscribe(store.settings.onChange);
+    c.subscribe(store.entryList.onChange);
   })
   .update((c) => {
-    const counters = store.state.counters;
-    const showEntries = store.state.settings.showEntries;
-    const entries = store.state.entryList.items;
+    const counters = store.counters;
+    const showEntries = store.settings.showEntries;
+    const entries = store.entryList.items;
 
     let children: VNode[];
     let entry: Entry;
@@ -100,7 +113,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
     let j: number;
 
     if (showEntries === DisplaySettings.ShowActive) {
-      c.transientSubscribe(store.state.entryList.onEntryCompletedChanged);
+      c.transientSubscribe(store.entryList.onEntryCompletedChanged);
       const entriesActive = counters.entries - counters.entriesCompleted;
 
       if (entriesActive === 0) {
@@ -116,7 +129,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
         }
       }
     } else if (showEntries === DisplaySettings.ShowCompleted) {
-      c.transientSubscribe(store.state.entryList.onEntryCompletedChanged);
+      c.transientSubscribe(store.entryList.onEntryCompletedChanged);
 
       if (counters.entriesCompleted === 0) {
         children = [];
@@ -138,7 +151,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
       }
     }
 
-    c.vSync(c.createVRoot()
+    c.sync(c.createVRoot()
       .props({"id": "todo-list"})
       .trackByKeyChildren(children));
   });

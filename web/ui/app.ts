@@ -7,12 +7,11 @@ import {Footer} from "./footer";
 export const App = new ComponentDescriptor<void, void>()
   .tagName("section")
   .attached((c) => {
-    c.subscribe(store.state.counters.onEntriesChange);
+    c.subscribe(store.counters.onEntriesChange);
   })
   .update((c) => {
-    c.vSync(c.createVRoot().disableChildrenShapeError()
-      .children(store.state.counters.entries > 0 ?
-        [Header.createVNode().bindOnce(), Main.createVNode().bindOnce(), Footer.createVNode().bindOnce()] :
-        [Header.createVNode().bindOnce()]));
-
+    c.sync(c.createVRoot().disableChildrenShapeError()
+      .children(store.counters.entries > 0 ?
+        [Header.createImmutableVNode(), Main.createImmutableVNode(), Footer.createImmutableVNode()] :
+        [Header.createImmutableVNode()]));
   });
