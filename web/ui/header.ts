@@ -27,7 +27,7 @@ Header
   .update((c, props, state) => {
     c.sync(c.createVRoot()
       .children([
-        createVElement("h1").children("todos"),
+        createVElement("h1").child("todos"),
         createVElement("input")
           .props({
             "id": "new-todo",

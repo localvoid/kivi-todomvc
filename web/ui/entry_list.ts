@@ -26,7 +26,7 @@ const EntryView = new ComponentDescriptor<Entry, {toggled: boolean}>()
 
     const view = createVElement("div").className("view").children([
       createVElement("input").className("toggle").attrs({"type": "checkbox"}).checked(entry.completed),
-      createVElement("label").children(entry.title),
+      createVElement("label").child(entry.title),
       createVElement("button").className("destroy"),
     ]);
 
@@ -124,7 +124,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
         for (i = 0; i < entries.length; i++) {
           entry = entries[i];
           if (!entry.completed) {
-            children[j++] = EntryView.createVNode(entry).key(entry.id).bindOnce();
+            children[j++] = EntryView.createImmutableVNode(entry).key(entry.id);
           }
         }
       }
@@ -139,7 +139,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
         for (i = 0; i < entries.length; i++) {
           entry = entries[i];
           if (entry.completed) {
-            children[j++] = EntryView.createVNode(entry).key(entry.id).bindOnce();
+            children[j++] = EntryView.createImmutableVNode(entry).key(entry.id);
           }
         }
       }
@@ -147,7 +147,7 @@ export const EntryList = new ComponentDescriptor<void, void>()
       children = new Array(entries.length);
       for (i = 0; i < entries.length; i++) {
         entry = entries[i];
-        children[i] = EntryView.createVNode(entry).key(entry.id).bindOnce();
+        children[i] = EntryView.createImmutableVNode(entry).key(entry.id);
       }
     }
 

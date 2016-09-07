@@ -22,7 +22,7 @@
     "TodoMVC"
   ],
   "dependencies": {
-    "kivi": "^1.0.0-rc0"
+    "kivi": "^1.0.0-rc2"
   },
   "devDependencies": {
     "del": "^2.2.1",

@@ -1,7 +1,6 @@
 import {ComponentDescriptor, createVElement, createVText, VNode} from "kivi";
 import {DisplaySettings, store} from "../store";
 
-
 export const Footer = new ComponentDescriptor<void, void>()
   .enableBackRef()
   .tagName("footer");
@@ -29,21 +28,21 @@ Footer
         createVElement("a")
           .props({"href": "#!/"})
           .className(showEntries === DisplaySettings.ShowAll ? "selected" : null)
-          .children("All"),
+          .child("All"),
       ]),
       createVText(" "),
       createVElement("li").children([
         createVElement("a")
           .props({"href": "#!/active"})
           .className(showEntries === DisplaySettings.ShowActive ? "selected" : null)
-          .children("Active"),
+          .child("Active"),
       ]),
       createVText(" "),
       createVElement("li").children([
         createVElement("a")
           .props({"href": "#!/completed"})
           .className(showEntries === DisplaySettings.ShowCompleted ? "selected" : null)
-          .children("Completed"),
+          .child("Completed"),
       ]),
     ]));
 
@@ -52,14 +51,14 @@ Footer
     const entriesActive = entries - entriesCompleted;
 
     children.push(createVElement("span").props({"id": "todo-count"}).children([
-      createVElement("strong").children(entriesActive.toString()),
+      createVElement("strong").child(entriesActive.toString()),
       createVText(entriesActive > 1 ? " items left" : " item left"),
     ]));
 
     if (entriesCompleted > 0) {
       children.push(createVElement("button")
         .props({"id": "clear-completed"})
-        .children(`Clear completed (${entriesCompleted})`));
+        .child(`Clear completed (${entriesCompleted})`));
     }
 
     c.sync(c.createVRoot()
